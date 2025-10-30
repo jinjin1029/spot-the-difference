@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>틀린그림찾기 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: #f0f0f0;
+            padding: 15px 20px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-item label {
+            display: block;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-item span {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .image-container {
+            position: relative;
+            flex: 1;
+            min-width: 200px;
+            max-width: 400px;
+        }
+
+        .image-container h3 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .image-wrapper {
+            position: relative;
+            width: 100%;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f9f9f9;
+            aspect-ratio: 1;
+        }
+
+        .image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .diff-marker {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #ff6b6b;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255, 107, 107, 0.1);
+        }
+
+        .diff-marker:hover {
+            background: rgba(255, 107, 107, 0.3);
+            transform: scale(1.2);
+        }
+
+        .diff-marker.found {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.3);
+        }
+
+        .differences-list {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .differences-list h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .diff-item {
+            padding: 8px 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .diff-item.found {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+            text-decoration: line-through;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            font-size: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .btn-next {
+            background: #667eea;
+            color: white;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-next:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-reset {
+            background: #764ba2;
+            color: white;
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .btn-reset:hover {
+            background: #653a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .game-over h2 {
+            font-size: 32px;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .game-over p {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+
+            .game-area {
+                flex-direction: column;
+            }
+
+            .image-container {
+                min-width: 100%;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 틀린그림찾기 게임</h1>
+            <div class="stats">
+                <div class="stat-item">
+                    <label>현재 레벨</label>
+                    <span id="level">1</span>
+                </div>
+                <div class="stat-item">
+                    <label>찾은 개수</label>
+                    <span id="foundCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <label>남은 개수</label>
+                    <span id="remainCount">3</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="gameContent">
+            <div class="game-area">
+                <div class="image-container">
+                    <h3>원본 이미지</h3>
+                    <div class="image-wrapper">
+                        <img id="image1" src="" alt="원본">
+                    </div>
+                </div>
+
+                <div class="image-container">
+                    <h3>다른 이미지 (클릭해서 찾기)</h3>
+                    <div class="image-wrapper" style="position: relative;">
+                        <img id="image2" src="" alt="수정된">
+                        <div id="markersContainer"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="differences-list">
+                <h3>🎯 찾아야 할 차이점:</h3>
+                <div id="diffList"></div>
+            </div>
+
+            <div class="buttons">
+                <button class="btn-next" id="nextBtn">다음 레벨</button>
+                <button class="btn-reset" id="resetBtn">처음부터</button>
+            </div>
+        </div>
+
+        <div id="gameOverContent" style="display: none;">
+            <div class="game-over">
+                <h2>🎉 게임 완료!</h2>
+                <p>모든 레벨을 클리어했습니다!</p>
+                <p>총 정답 개수: <strong id="totalFound">0</strong></p>
+                <button class="btn-reset" onclick="location.reload()">다시 플레이</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLevel = 0;
+        let foundDifferences = [];
+        let totalFound = 0;
+        const totalLevels = 7;
+
+        function loadGame() {
+            foundDifferences = [];
+            
+            const originalPath = `game_images/level_${currentLevel}_original.jpg`;
+            const modifiedPath = `game_images/level_${currentLevel}_modified.jpg`;
+            
+            document.getElementById('image1').src = originalPath + '?v=' + new Date().getTime();
+            document.getElementById('image2').src = modifiedPath + '?v=' + new Date().getTime();
+            
+            updateUI();
+            renderDiffList();
+            renderMarkers();
+        }
+
+        function renderMarkers() {
+            const markersContainer = document.getElementById('markersContainer');
+            markersContainer.innerHTML = '';
+            
+            const positions = [
+                {x: 50, y: 80},
+                {x: 280, y: 150},
+                {x: 320, y: 320}
+            ];
+            
+            for (let i = 0; i < 3; i++) {
+                const marker = document.createElement('div');
+                marker.className = 'diff-marker';
+                marker.style.left = (positions[i].x - 15) + 'px';
+                marker.style.top = (positions[i].y - 15) + 'px';
+                marker.dataset.index = i;
+                marker.onclick = (e) => {
+                    e.stopPropagation();
+                    markFound(i);
+                };
+                markersContainer.appendChild(marker);
+            }
+        }
+
+        function markFound(index) {
+            if (!foundDifferences.includes(index)) {
+                foundDifferences.push(index);
+                totalFound++;
+                updateUI();
+                renderDiffList();
+                
+                const marker = document.querySelector(`[data-index="${index}"]`);
+                if (marker) {
+                    marker.classList.add('found');
+                }
+
+                if (foundDifferences.length === 3) {
+                    setTimeout(() => {
+                        alert('🎉 이 레벨을 클리어했습니다!');
+                        nextLevel();
+                    }, 500);
+                }
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('level').textContent = currentLevel + 1;
+            document.getElementById('foundCount').textContent = foundDifferences.length;
+            document.getElementById('remainCount').textContent = 3 - foundDifferences.length;
+        }
+
+        function renderDiffList() {
+            const diffList = document.getElementById('diffList');
+            diffList.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const item = document.createElement('div');
+                item.className = 'diff-item' + (foundDifferences.includes(i) ? ' found' : '');
+                item.textContent = foundDifferences.includes(i) ? '✓ 찾음' : `차이점 ${i + 1}`;
+                diffList.appendChild(item);
+            }
+        }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel < totalLevels) {
+                loadGame();
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            document.getElementById('gameContent').style.display = 'none';
+            document.getElementById('gameOverContent').style.display = 'block';
+            document.getElementById('totalFound').textContent = totalFound;
+        }
+
+        document.getElementById('nextBtn').addEventListener('click', nextLevel);
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            currentLevel = 0;
+            totalFound = 0;
+            foundDifferences = [];
+            document.getElementById('gameContent').style.display = 'block';
+            document.getElementById('gameOverContent').style.display = 'none';
+            loadGame();
+        });
+
+        loadGame();
+    </script>
+</body>
+</html>
