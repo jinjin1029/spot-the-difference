@@ -309,8 +309,8 @@
         function loadGame() {
             foundDifferences = [];
             
-            const originalPath = `/spot-the-difference/game_images/level_${currentLevel}_original.jpg`;
-            const modifiedPath = `/spot-the-difference/game_images/level_${currentLevel}_modified.jpg`;
+            const originalPath = `level_${currentLevel}_original.jpg`;
+            const modifiedPath = `level_${currentLevel}_modified.jpg`;
             
             document.getElementById('image1').src = originalPath + '?v=' + new Date().getTime();
             document.getElementById('image2').src = modifiedPath + '?v=' + new Date().getTime();
